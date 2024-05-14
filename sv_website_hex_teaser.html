@@ -46,10 +46,6 @@
     width: 100%;
     height: 100%;
   }
-  .chart canvas {
-    width: 100% !important;
-    height: 100% !important;
-  }
   .number-container {
     display: flex;
     flex-direction: column;
@@ -82,7 +78,6 @@
 
   <div class="chart-container">
     <div class="chart" id="donut-chart">
-      <canvas></canvas>
     </div>
     <div class="footnote">* Diese Zahl repräsentiert die verbleibenden Universitäten.</div>
   </div>
@@ -127,61 +122,104 @@
     const interval2 = setInterval(animateNumber2, 16);
 
     // Donut Chart
-    const ctxDonut = document.getElementById('donut-chart').appendChild(document.createElement('canvas')).getContext('2d');
-    const donutChart = new Chart(ctxDonut, {
-      type: 'doughnut',
-      data: {
-        labels: ['15 Universitäten in DB', '15 Universitäten in Progress', '50 verbleibende Universitäten*'],
-        datasets: [{
-          data: [15, 15, 50],
-          backgroundColor: ['#195365', '#A96BF1', '#EAE9E3'],
-          borderWidth: 0
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: true,
-        cutout: '30%',
-        animation: {
-          animateRotate: true,
-          duration: 2000
-        },
-        plugins: {
-          legend: {
-            align: 'start',
-            labels: {
-              usePointStyle: true
-            }
-          }
+    // Donut Chart
+const ctxDonut = document.getElementById('donut-chart').appendChild(document.createElement('canvas')).getContext('2d');
+const donutChart = new Chart(ctxDonut, {
+  type: 'doughnut',
+  data: {
+    labels: ['15 Universitäten in DB', '15 Universitäten in Progress', '50 verbleibende Universitäten*'],
+    datasets: [{
+      data: [15, 15, 50],
+      backgroundColor: ['#195365', '#A96BF1', '#B5BFC5'],
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: true,
+    cutout: '30%',
+    animation: {
+      animateRotate: true,
+      duration: 2000
+    },
+    plugins: {
+      legend: {
+        position: 'top', // Position der Legende auf der rechten Seite
+        align: 'start', // Rechtsbündige Ausrichtung der Legende
+        labels: {
+          usePointStyle: true
         }
       }
-    });
+    }
+  }
+});
 
-    // Bar Chart
-    const ctxBar = document.getElementById('bar-chart').appendChild(document.createElement('canvas')).getContext('2d');
-    const barChart = new Chart(ctxBar, {
-      type: 'bar',
-      data: {
-        labels: ['A', 'B', 'C', 'D'],
-        datasets: [{
-          label: 'Dataset',
-          data: [10, 20, 30, 40],
-          backgroundColor: '#195365'
-        }]
+// Bar Chart
+// Bar Chart
+const ctxBar = document.getElementById('bar-chart').appendChild(document.createElement('canvas')).getContext('2d');
+const barChart = new Chart(ctxBar, {
+  type: 'bar',
+  data: {
+    labels: [''],
+    datasets: [{
+      label: 'Studierende DB',
+      data: [210000],
+      backgroundColor: '#E73f0c',
+      barThickness: 90, // Feste Breite der Balken
+    }, {
+      label: 'Studierende in Progress',
+      data: [220000],
+      backgroundColor: '#6896A8',
+      barThickness: 90, // Feste Breite der Balken
+    }, {
+      label: 'Studierende Gesamt',
+      data: [320000],
+      backgroundColor: '#B5BFC5',
+      barThickness: 90, // Feste Breite der Balken
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false, // Set to false to fill the container's height
+    animation: {
+      duration: 2000
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        stacked: true, // Set to true to stack bars
+        grid: {
+          display: false // Set to false to remove grid lines
+        }
       },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false, // Set to false to fill the container's height
-        animation: {
-          duration: duration
-        },
-        scales: {
-          y: {
-            beginAtZero: true
+      x: {
+        stacked: true, // Set to true to stack bars
+        grid: {
+          display: false // Set to false to remove grid lines
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        position: 'top', // Position der Legende auf der rechten Seite
+        align: 'end', // Rechtsbündige Ausrichtung der Legende
+        labels: {
+          usePointStyle: true, // Punkt als Marker in der Legende verwenden
+          generateLabels: function(chart) {
+            const originalLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+            const customLabels = ['Studierende DB', 'Studierende Progress', 'Studierende Gesamt']; // Benutzerdefinierte Labels
+            return originalLabels.map((label, index) => ({
+              ...label,
+              text: customLabels[index]
+            }));
           }
         }
       }
-    });
+    }
+  }
+});
+
+
   });
 </script>
 
