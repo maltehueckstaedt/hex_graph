@@ -9,7 +9,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 20vh;
+    height: 100vh;
     margin: 0;
     background-color: #fff;
     font-family: Brandon, iconfont, sans-serif;
@@ -48,7 +48,7 @@
   }
   .chart canvas {
     width: 100% !important;
-    height: auto !important;
+    height: 100% !important;
   }
   .number-container {
     display: flex;
@@ -104,14 +104,14 @@
     let currentNumber2 = 0;
 
     function animateNumber1() {
-  currentNumber1 += increment1;
-  if (currentNumber1 >= targetNumber1) {
-    numberElement1.textContent = targetNumber1.toFixed(1) + ' Mio';
-    clearInterval(interval1);
-  } else {
-    numberElement1.textContent = currentNumber1.toFixed(1) + ' Mio';
-  }
-}
+      currentNumber1 += increment1;
+      if (currentNumber1 >= targetNumber1) {
+        numberElement1.textContent = targetNumber1.toFixed(1) + ' Mio';
+        clearInterval(interval1);
+      } else {
+        numberElement1.textContent = currentNumber1.toFixed(1) + ' Mio';
+      }
+    }
 
     function animateNumber2() {
       currentNumber2 += increment2;
@@ -126,9 +126,7 @@
     const interval1 = setInterval(animateNumber1, 16);
     const interval2 = setInterval(animateNumber2, 16);
 
-    // Dounut
-
-
+    // Donut Chart
     const ctxDonut = document.getElementById('donut-chart').appendChild(document.createElement('canvas')).getContext('2d');
     const donutChart = new Chart(ctxDonut, {
       type: 'doughnut',
@@ -150,16 +148,14 @@
         },
         plugins: {
           legend: {
-            align: 'start', // Linksbündige Ausrichtung der Legende
+            align: 'start',
             labels: {
-              usePointStyle: true, // Legendenfarben als Kreise darstellen
+              usePointStyle: true
             }
           }
         }
       }
     });
-
-// Linechart
 
     // Bar Chart
     const ctxBar = document.getElementById('bar-chart').appendChild(document.createElement('canvas')).getContext('2d');
@@ -175,15 +171,14 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false, // Set to false to fill the container's height
         animation: {
           duration: duration
         },
         scales: {
-          yAxes: [{
-            ticks: {
-              beginAtZero: true
-            }
-          }]
+          y: {
+            beginAtZero: true
+          }
         }
       }
     });
