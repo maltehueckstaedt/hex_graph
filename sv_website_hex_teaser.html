@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Animated Dashboard</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 20vh;
+    margin: 0;
+    background-color: #fff;
+    font-family: Brandon, iconfont, sans-serif;
+  }
+  .container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    width: 60%;
+    height: 80%;
+    justify-content: center;
+    align-items: center;
+  }
+  .number {
+    font-size: 4vw;
+    font-weight: bold;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 8px;
+    font-family: Brandon, iconfont, sans-serif;
+    text-align: center;
+  }
+  .chart {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 8px;
+    width: 100%;
+    height: 100%;
+  }
+  .chart canvas {
+    width: 100% !important;
+    height: auto !important;
+  }
+  .number-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .footnote {
+    font-size: clamp(7px, 1.2vw, 12px);
+    color: #666;
+    margin-top: 20px;
+  }
+  .chart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="number-container">
+    <div class="number" id="number1">0</div>
+    <div class="text" id="text1">Vorlesungen, Seminare und weitere im VVZ hinterlegte Veranstaltungen</div>
+  </div>
+  
+  <div class="number-container">
+    <div class="number" id="number2">0</div>
+    <div class="text" id="text1">Winter- und Sommersemester; das frühste ab 1996.</div>
+  </div>
+
+  <div class="chart-container">
+    <div class="chart" id="donut-chart">
+      <canvas></canvas>
+    </div>
+    <div class="footnote">* Diese Zahl repräsentiert die verbleibenden Universitäten.</div>
+  </div>
+  
+  <div class="chart" id="bar-chart"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const targetNumber1 = 1.9;
+    const targetNumber2 = 313;
+    const duration = 2000;
+    const increment1 = targetNumber1 / (duration / 16);
+    const increment2 = targetNumber2 / (duration / 16);
+    const numberElement1 = document.getElementById('number1');
+    const numberElement2 = document.getElementById('number2');
+    let currentNumber1 = 0.1;
+    let currentNumber2 = 0;
+
+    function animateNumber1() {
+  currentNumber1 += increment1;
+  if (currentNumber1 >= targetNumber1) {
+    numberElement1.textContent = targetNumber1.toFixed(1) + ' Mio';
+    clearInterval(interval1);
+  } else {
+    numberElement1.textContent = currentNumber1.toFixed(1) + ' Mio';
+  }
+}
+
+    function animateNumber2() {
+      currentNumber2 += increment2;
+      if (currentNumber2 >= targetNumber2) {
+        numberElement2.textContent = targetNumber2;
+        clearInterval(interval2);
+      } else {
+        numberElement2.textContent = Math.floor(currentNumber2);
+      }
+    }
+
+    const interval1 = setInterval(animateNumber1, 16);
+    const interval2 = setInterval(animateNumber2, 16);
+
+    // Dounut
+
+
+    const ctxDonut = document.getElementById('donut-chart').appendChild(document.createElement('canvas')).getContext('2d');
+    const donutChart = new Chart(ctxDonut, {
+      type: 'doughnut',
+      data: {
+        labels: ['15 Universitäten in DB', '15 Universitäten in Progress', '50 verbleibende Universitäten*'],
+        datasets: [{
+          data: [15, 15, 50],
+          backgroundColor: ['#195365', '#A96BF1', '#EAE9E3'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        cutout: '30%',
+        animation: {
+          animateRotate: true,
+          duration: 2000
+        },
+        plugins: {
+          legend: {
+            align: 'start', // Linksbündige Ausrichtung der Legende
+            labels: {
+              usePointStyle: true, // Legendenfarben als Kreise darstellen
+            }
+          }
+        }
+      }
+    });
+
+// Linechart
+
+    // Bar Chart
+    const ctxBar = document.getElementById('bar-chart').appendChild(document.createElement('canvas')).getContext('2d');
+    const barChart = new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels: ['A', 'B', 'C', 'D'],
+        datasets: [{
+          label: 'Dataset',
+          data: [10, 20, 30, 40],
+          backgroundColor: '#195365'
+        }]
+      },
+      options: {
+        responsive: true,
+        animation: {
+          duration: duration
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
