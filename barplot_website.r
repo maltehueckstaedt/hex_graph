@@ -25,15 +25,18 @@ list_parse <- function(df) {
 
 # Beispiel-Daten für hc2 erstellen
 dates <- seq(as.Date("2019-01-01"), as.Date("2024-01-04"), by = "year")
-courses_english <- xts(c(2000, 3000, 5000, 7000, 10000, 12000), dates)
-courses_spanish <- xts(c(1000, 2000, 3000, 5000, 8000, 11000), dates)
-courses_german <- xts(c(500, 1000, 1500, 2000, 3000, 4000), dates)
-
-
+courses_english <- xts(c(2000, 3000, 3500, 4000, 3800, 3000), dates)
+courses_spanish <- xts(c(1500, 2000, 3000, 3500, 3500, 3800), dates)
+courses_german <- xts(c(1000, 1500, 2000, 2500, 3000, 3500), dates)
+ 
 # Daten in data.frame umwandeln
 df_english <- data.frame(date = index(courses_english), value = coredata(courses_english))
 df_spanish <- data.frame(date = index(courses_spanish), value = coredata(courses_spanish))
 df_german <- data.frame(date = index(courses_german), value = coredata(courses_german))
+df_english$date <- format(df_english$date, "%Y")
+df_spanish$date <- format(df_spanish$date, "%Y")
+df_german$date <- format(df_german$date, "%Y")
+
 
 # Highcharts-Theme mit Montserrat-Schriftart erstellen
 highchart_theme <- hc_theme(
@@ -82,23 +85,28 @@ highchart_theme <- hc_theme(
 hc1 <- highchart() %>%
   hc_chart(type = "column") %>%
   hc_title(text = "Sprachen in Kursen im WS/2023") %>%
-  hc_xAxis(categories = df_languages$language) %>%
+  hc_xAxis(categories = df_languages$language, title = list(text = "Sprachen")) %>%
+  hc_yAxis(title = list(text = "Anzahl der Kurse")) %>%
   hc_add_series(name = "Sprachen", data = list_parse(df_languages)) %>% # Ändere die Daten hier
   hc_tooltip(
     headerFormat = '',
-    pointFormatter = JS("function() { return this.category + ': <b>' + Highcharts.numberFormat(this.y, 0, ',', '.') + '</b> Kurse'; }")
-  ) %>%
+    pointFormatter = JS("function() { return '<b>' + this.category + '</b>: ' + Highcharts.numberFormat(this.y, 0, ',', '.') + ' Kurse'; }")
+  )%>%
   hc_legend(enabled = FALSE) %>% # Blende die Legende aus
   hc_add_theme(highchart_theme) # Füge das Theme hinzu
 
 # Zweites Diagramm mit definierten Daten
 hc2 <- highchart() %>%
-  hc_yAxis(title = list(text = "Courses")) %>%
-  hc_xAxis(categories = as.character(df_english$date)) %>%
-  hc_add_series(name = "English Courses", data = df_english$value, color = "#195365") %>%
-  hc_add_series(name = "Spanish Courses", data = df_spanish$value, color = "#E73F0C") %>%
-  hc_add_series(name = "German Courses", data = df_german$value, color = "#AFD700") %>%
-  hc_add_theme(highchart_theme) # Füge das Theme hinzu
+  hc_yAxis(title = list(text = "Anzahl der Kurse")) %>%
+  hc_xAxis(categories = as.character(df_english$date), title = list(text = "Semester")) %>%
+  hc_add_series(name = "Englisch", data = df_english$value, color = "#195365") %>%
+  hc_add_series(name = "Deutsch", data = df_spanish$value, color = "#E73F0C") %>%
+  hc_add_series(name = "Spanisch", data = df_german$value, color = "#AFD700") %>%
+  hc_add_theme(highchart_theme) |> 
+  hc_tooltip(
+    headerFormat = '',
+    pointFormatter = JS("function() { return '<b>' + this.category + '</b>: ' + Highcharts.numberFormat(this.y, 0, ',', '.') + ' Kurse'; }")
+  )
 
 ui <- fluidPage(
   tags$head(
