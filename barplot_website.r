@@ -2,33 +2,138 @@ library(tidyverse)
 library(shiny)
 library(highcharter)
 library(xts)
-# Erstes Diagramm
+library(htmlwidgets)
+
+# Beispiel-Daten für hc1 erstellen
+df_languages <- data.frame(
+  language = c('Englisch', 'Deutsch', 'Spanisch'),
+  value = c(3311, 1214, 1213),
+  color = c("#195365", "#E73F0C", "#AFD700")
+)
+ 
+
+list_parse <- function(df) {
+  lapply(1:nrow(df), function(i) {
+    list(
+      y = df$value[i],
+      color = df$color[i],
+      name = df$language[i]
+    )
+  })
+}
+
+
+# Beispiel-Daten für hc2 erstellen
+dates <- seq(as.Date("2019-01-01"), as.Date("2024-01-04"), by = "year")
+courses_english <- xts(c(2000, 3000, 5000, 7000, 10000, 12000), dates)
+courses_spanish <- xts(c(1000, 2000, 3000, 5000, 8000, 11000), dates)
+courses_german <- xts(c(500, 1000, 1500, 2000, 3000, 4000), dates)
+
+
+# Daten in data.frame umwandeln
+df_english <- data.frame(date = index(courses_english), value = coredata(courses_english))
+df_spanish <- data.frame(date = index(courses_spanish), value = coredata(courses_spanish))
+df_german <- data.frame(date = index(courses_german), value = coredata(courses_german))
+
+# Highcharts-Theme mit Montserrat-Schriftart erstellen
+highchart_theme <- hc_theme(
+  chart = list(
+    style = list(
+      fontFamily = "Montserrat"
+    )
+  ),
+  title = list(
+    style = list(
+      fontFamily = "Montserrat"
+    )
+  ),
+  subtitle = list(
+    style = list(
+      fontFamily = "Montserrat"
+    )
+  ),
+  xAxis = list(
+    labels = list(
+      style = list(
+        fontFamily = "Montserrat"
+      )
+    )
+  ),
+  yAxis = list(
+    labels = list(
+      style = list(
+        fontFamily = "Montserrat"
+      )
+    )
+  ),
+  legend = list(
+    itemStyle = list(
+      fontFamily = "Montserrat"
+    )
+  ),
+  tooltip = list(
+    style = list(
+      fontFamily = "Montserrat"
+    )
+  )
+)
+
+# Erstes Diagramm mit data.frame
 hc1 <- highchart() %>%
   hc_chart(type = "column") %>%
-  hc_title(text = "Erstes Diagramm") %>%
-  hc_xAxis(categories = c('Englisch', 'Deutsch', 'Spanisch')) %>%
-  hc_add_series(name = "Sprachen", data = c(111, 214, 213))
-# Beispiel-Daten erstellen
-dates <- seq(as.Date("2019-01-01"), as.Date("2024-01-04"), by="year")
-courses_english <- xts(c(2, 3, 5, 7, 10, 12), dates)
-courses_spanish <- xts(c(1, 2, 3, 5, 8, 11), dates)
-courses_german <- xts(c(0.5, 1, 1.5, 2, 3, 4), dates)
-
-# Diagramm erstellen
-hc2 <- highchart(type = "stock") %>%
-  hc_yAxis_multiples(
-    list(top = "0%", height = "33%", title = list(text = "English Courses")),
-    list(top = "33%", height = "33%", title = list(text = "Spanish Courses")),
-    list(top = "66%", height = "33%", title = list(text = "German Courses"))
+  hc_title(text = "Sprachen in Kursen im WS/2023") %>%
+  hc_xAxis(categories = df_languages$language) %>%
+  hc_add_series(name = "Sprachen", data = list_parse(df_languages)) %>% # Ändere die Daten hier
+  hc_tooltip(
+    headerFormat = '',
+    pointFormatter = JS("function() { return this.category + ': <b>' + Highcharts.numberFormat(this.y, 0, ',', '.') + '</b> Kurse'; }")
   ) %>%
-  hc_add_series(courses_english, yAxis=0, name = "English Courses", color="blue") %>%
-  hc_add_series(courses_spanish, yAxis=1, name = "Spanish Courses", color="red") %>%
-  hc_add_series(courses_german, yAxis=2, name = "German Courses", color="green")
+  hc_legend(enabled = FALSE) %>% # Blende die Legende aus
+  hc_add_theme(highchart_theme) # Füge das Theme hinzu
 
-
-library(shiny)
+# Zweites Diagramm mit definierten Daten
+hc2 <- highchart() %>%
+  hc_yAxis(title = list(text = "Courses")) %>%
+  hc_xAxis(categories = as.character(df_english$date)) %>%
+  hc_add_series(name = "English Courses", data = df_english$value, color = "#195365") %>%
+  hc_add_series(name = "Spanish Courses", data = df_spanish$value, color = "#E73F0C") %>%
+  hc_add_series(name = "German Courses", data = df_german$value, color = "#AFD700") %>%
+  hc_add_theme(highchart_theme) # Füge das Theme hinzu
 
 ui <- fluidPage(
+  tags$head(
+    tags$link(rel = "stylesheet", href = "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap"),
+    tags$style(HTML("
+      body {
+        font-family: 'Montserrat', 'Helvetica Neue', 'Arial', sans-serif;
+      }
+      #switch {
+        background-color: white; /* Weiße Hintergrundfarbe */
+        border: 1px solid #4a4a4a; /* Schwarze Konturlinie */
+        color: #4a4a4a; /* Schwarze Textfarbe */
+        padding: 5px 5px; /* Etwas Innenabstand */
+        text-align: center; /* Zentrierter Text */
+        text-decoration: none; /* Unterstreichen entfernen */
+        display: inline-block; /* Als Blockelement anzeigen */
+        font-size: 10px; /* Schriftgröße */
+        margin: 4px 2px; /* Etwas Außenabstand */
+        cursor: pointer; /* Hand-Cursor */
+        border-radius: 40px; /* Abgerundete Ecken */
+        width: 150px; /* Feste Breite */
+        height: 40px; /* Feste Höhe */
+        box-shadow: none; /* Kein Schatten */
+        outline: none; /* Entfernen der Fokuslinie */
+      }
+  
+      #switch:active {
+         transform: translateY(2px); /* Button nach unten verschieben beim Klicken */
+      }
+  
+      #switch:hover {
+        background-color: #f9f9f9; /* Dunklerer Hintergrund beim Hover */
+      }
+    "))
+  ),
   actionButton("switch", "Kurse im Zeitverlauf"),
   highchartOutput("chart")
 )
@@ -39,8 +144,10 @@ server <- function(input, output, session) {
   observeEvent(input$switch, {
     if (identical(current_chart(), hc1)) {
       current_chart(hc2)
+      updateActionButton(session, "switch", label = "Sprachen im WS/2024")
     } else {
       current_chart(hc1)
+      updateActionButton(session, "switch", label = "Sprachen zwischen <br> WS/2019 und WS/2024")
     }
   })
   
