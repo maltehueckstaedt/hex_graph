@@ -10,7 +10,6 @@ df_languages <- data.frame(
   value = c(3311, 1214, 1213),
   color = c("#195365", "#E73F0C", "#AFD700")
 )
- 
 
 list_parse <- function(df) {
   lapply(1:nrow(df), function(i) {
@@ -22,13 +21,12 @@ list_parse <- function(df) {
   })
 }
 
-
 # Beispiel-Daten für hc2 erstellen
 dates <- seq(as.Date("2019-01-01"), as.Date("2024-01-04"), by = "year")
 courses_english <- xts(c(2000, 3000, 3500, 4000, 3800, 3000), dates)
 courses_spanish <- xts(c(1500, 2000, 3000, 3500, 3500, 3800), dates)
 courses_german <- xts(c(1000, 1500, 2000, 2500, 3000, 3500), dates)
- 
+
 # Daten in data.frame umwandeln
 df_english <- data.frame(date = index(courses_english), value = coredata(courses_english))
 df_spanish <- data.frame(date = index(courses_spanish), value = coredata(courses_spanish))
@@ -36,7 +34,6 @@ df_german <- data.frame(date = index(courses_german), value = coredata(courses_g
 df_english$date <- format(df_english$date, "%Y")
 df_spanish$date <- format(df_spanish$date, "%Y")
 df_german$date <- format(df_german$date, "%Y")
-
 
 # Highcharts-Theme mit Montserrat-Schriftart erstellen
 highchart_theme <- hc_theme(
@@ -87,13 +84,13 @@ hc1 <- highchart() %>%
   hc_title(text = "Sprachen in Kursen im WS/2023") %>%
   hc_xAxis(categories = df_languages$language, title = list(text = "Sprachen")) %>%
   hc_yAxis(title = list(text = "Anzahl der Kurse")) %>%
-  hc_add_series(name = "Sprachen", data = list_parse(df_languages)) %>% # Ändere die Daten hier
+  hc_add_series(name = "Sprachen", data = list_parse(df_languages)) %>%
   hc_tooltip(
     headerFormat = '',
     pointFormatter = JS("function() { return '<b>' + this.category + '</b>: ' + Highcharts.numberFormat(this.y, 0, ',', '.') + ' Kurse'; }")
-  )%>%
-  hc_legend(enabled = FALSE) %>% # Blende die Legende aus
-  hc_add_theme(highchart_theme) # Füge das Theme hinzu
+  ) %>%
+  hc_legend(enabled = FALSE) %>%
+  hc_add_theme(highchart_theme)
 
 # Zweites Diagramm mit definierten Daten
 hc2 <- highchart() %>%
@@ -102,7 +99,7 @@ hc2 <- highchart() %>%
   hc_add_series(name = "Englisch", data = df_english$value, color = "#195365") %>%
   hc_add_series(name = "Deutsch", data = df_spanish$value, color = "#E73F0C") %>%
   hc_add_series(name = "Spanisch", data = df_german$value, color = "#AFD700") %>%
-  hc_add_theme(highchart_theme) |> 
+  hc_add_theme(highchart_theme) %>%
   hc_tooltip(
     headerFormat = '',
     pointFormatter = JS("function() { return '<b>' + this.category + '</b>: ' + Highcharts.numberFormat(this.y, 0, ',', '.') + ' Kurse'; }")
@@ -115,52 +112,94 @@ ui <- fluidPage(
       body {
         font-family: 'Montserrat', 'Helvetica Neue', 'Arial', sans-serif;
       }
-      #switch {
-        background-color: white; /* Weiße Hintergrundfarbe */
-        border: 1px solid #4a4a4a; /* Schwarze Konturlinie */
-        color: #4a4a4a; /* Schwarze Textfarbe */
-        padding: 5px 5px; /* Etwas Innenabstand */
-        text-align: center; /* Zentrierter Text */
-        text-decoration: none; /* Unterstreichen entfernen */
-        display: inline-block; /* Als Blockelement anzeigen */
-        font-size: 10px; /* Schriftgröße */
-        margin: 4px 2px; /* Etwas Außenabstand */
-        cursor: pointer; /* Hand-Cursor */
-        border-radius: 40px; /* Abgerundete Ecken */
-        width: 150px; /* Feste Breite */
-        height: 40px; /* Feste Höhe */
-        box-shadow: none; /* Kein Schatten */
-        outline: none; /* Entfernen der Fokuslinie */
+      .switch {
+        background-color: white;
+        border: 1px solid #4a4a4a;
+        color: #4a4a4a;
+        padding: 5px 5px;
+        text-align: center;
+        text-decoration: none;
+        display: inline-block;
+        font-size: 10px;
+        margin: 4px 2px;
+        cursor: pointer;
+        border-radius: 40px;
+        width: 150px;
+        height: 40px;
+        box-shadow: none;
+        outline: none;
       }
-  
-      #switch:active {
-         transform: translateY(2px); /* Button nach unten verschieben beim Klicken */
+      .switch:active {
+         transform: translateY(2px);
       }
-  
-      #switch:hover {
-        background-color: #f9f9f9; /* Dunklerer Hintergrund beim Hover */
+      .switch:hover {
+        background-color: #f9f9f9;
       }
     "))
   ),
-  actionButton("switch", "Kurse im Zeitverlauf"),
-  highchartOutput("chart")
+  fluidRow(
+    column(6,
+           actionButton("switch1", "Kurse im Zeitverlauf", class = "switch"),
+           highchartOutput("chart1", height = "250px")
+    ),
+    column(6,
+           actionButton("switch2", "Kurse im Zeitverlauf", class = "switch"),
+           highchartOutput("chart2", height = "250px")
+    )
+  ),
+  fluidRow(
+    column(6,
+           actionButton("switch3", "Kurse im Zeitverlauf", class = "switch"),
+           highchartOutput("chart3", height = "250px")
+    )
+  )
 )
 
 server <- function(input, output, session) {
-  current_chart <- reactiveVal(hc1)
+  current_chart1 <- reactiveVal(hc1)
+  current_chart2 <- reactiveVal(hc1)
+  current_chart3 <- reactiveVal(hc1)
   
-  observeEvent(input$switch, {
-    if (identical(current_chart(), hc1)) {
-      current_chart(hc2)
-      updateActionButton(session, "switch", label = "Sprachen im WS/2024")
+  observeEvent(input$switch1, {
+    if (identical(current_chart1(), hc1)) {
+      current_chart1(hc2)
+      updateActionButton(session, "switch1", label = "Sprachen im WS/2024")
     } else {
-      current_chart(hc1)
-      updateActionButton(session, "switch", label = "Sprachen zwischen <br> WS/2019 und WS/2024")
+      current_chart1(hc1)
+      updateActionButton(session, "switch1", label = "Kurse im Zeitverlauf")
     }
   })
   
-  output$chart <- renderHighchart({
-    current_chart()
+  observeEvent(input$switch2, {
+    if (identical(current_chart2(), hc1)) {
+      current_chart2(hc2)
+      updateActionButton(session, "switch2", label = "Sprachen im WS/2024")
+    } else {
+      current_chart2(hc1)
+      updateActionButton(session, "switch2", label = "Kurse im Zeitverlauf")
+    }
+  })
+  
+  observeEvent(input$switch3, {
+    if (identical(current_chart3(), hc1)) {
+      current_chart3(hc2)
+      updateActionButton(session, "switch3", label = "Sprachen im WS/2024")
+    } else {
+      current_chart3(hc1)
+      updateActionButton(session, "switch3", label = "Kurse im Zeitverlauf")
+    }
+  })
+  
+  output$chart1 <- renderHighchart({
+    current_chart1()
+  })
+  
+  output$chart2 <- renderHighchart({
+    current_chart2()
+  })
+  
+  output$chart3 <- renderHighchart({
+    current_chart3()
   })
 }
 
